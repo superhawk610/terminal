@@ -2,37 +2,29 @@ package terminal
 
 import (
 	"fmt"
+	"os"
 	"strings"
-	"syscall"
-	"unsafe"
+
+	dimensions "github.com/wayneashleyberry/terminal-dimensions"
 )
+
+const defaultWidth uint = 100
 
 var terminalWidth uint
 var clearer string
 
 func init() {
-	terminalWidth = getTerminalWidth()
-	clearer = strings.Repeat(" ", int(terminalWidth)-1)
-}
-
-type winsize struct {
-	Row    uint16
-	Col    uint16
-	Xpixel uint16
-	Ypixel uint16
-}
-
-func getTerminalWidth() uint {
-	ws := &winsize{}
-	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
-		uintptr(syscall.Stdin),
-		uintptr(syscall.TIOCGWINSZ),
-		uintptr(unsafe.Pointer(ws)))
-
-	if int(retCode) == -1 {
-		panic(errno)
+	var err error
+	if terminalWidth, err = dimensions.Width(); err != nil {
+		fmt.Fprintf(os.Stderr, "couldn't determine the width of the terminal, defaulting to %d", defaultWidth)
+		terminalWidth = defaultWidth
 	}
-	return uint(ws.Col)
+
+	if terminalWidth <= 0 {
+		panic("the terminal appears to have 0 visible columns")
+	}
+
+	clearer = strings.Repeat(" ", int(terminalWidth)-1)
 }
 
 // ClearLine clears the current line in the terminal
