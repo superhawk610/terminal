@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	dimensions "github.com/wayneashleyberry/terminal-dimensions"
+	"github.com/mattn/go-tty"
 )
 
 const defaultWidth uint = 100
@@ -15,7 +15,16 @@ var clearer string
 
 func init() {
 	var err error
-	if terminalWidth, err = dimensions.Width(); err != nil {
+
+	t, err := tty.Open()
+	if err == nil {
+		var width int
+		if width, _, err = t.Size(); err == nil {
+			terminalWidth = uint(width)
+		}
+		t.Close()
+	}
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "couldn't determine the width of the terminal, defaulting to %d", defaultWidth)
 		terminalWidth = defaultWidth
 	}
