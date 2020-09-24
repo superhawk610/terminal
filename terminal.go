@@ -24,13 +24,9 @@ func init() {
 		}
 		t.Close()
 	}
-	if err != nil {
+	if err != nil || terminalWidth <= 0 {
 		fmt.Fprintf(os.Stderr, "couldn't determine the width of the terminal, defaulting to %d", defaultWidth)
 		terminalWidth = defaultWidth
-	}
-
-	if terminalWidth <= 0 {
-		panic("the terminal appears to have 0 visible columns")
 	}
 
 	clearer = strings.Repeat(" ", int(terminalWidth)-1)
